@@ -9,4 +9,4 @@ services:
       - key: ANALYTICS_TOKEN
         value: a3f5d7e29c1b6f8a4d9c2e5b8f3d7a1e6c9b2f5d8e3a7c1b6f9d2e5a8c3b7f1e4
       - key: PORT
-        value: 3000
+        value: 10000
