@@ -1,0 +1,12 @@
+services:
+  - name: marx-bot-analytics
+    type: web
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node analytics-server.js
+    envVars:
+      - key: ANALYTICS_TOKEN
+        value: your-secure-token-here
+      - key: PORT
+        value: 3000

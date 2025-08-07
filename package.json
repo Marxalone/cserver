@@ -1,0 +1,19 @@
+{
+  "name": "marx-bot-analytics",
+  "version": "1.0.0",
+  "description": "Analytics dashboard for Marx WhatsApp Bot",
+  "main": "analytics-server.js",
+  "scripts": {
+    "start": "node analytics-server.js",
+    "dev": "nodemon analytics-server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.1",
+    "ws": "^8.11.0",
+    "axios": "^1.0.0",
+    "chart.js": "^3.9.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
