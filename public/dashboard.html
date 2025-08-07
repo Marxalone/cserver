@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MARX BOT ANALYTICS</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary: #0a192f;
+      --secondary: #172a45;
+      --accent: #64ffda;
+      --text: #ccd6f6;
+      --text-secondary: #8892b0;
+      --neon-blue: #00f7ff;
+      --dark-blue: #020c1b;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--primary);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 20px;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(100, 255, 218, 0.2);
+    }
+    
+    h1 {
+      font-size: 2.5rem;
+      background: linear-gradient(90deg, var(--neon-blue), var(--accent));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 10px;
+    }
+    
+    .subtitle {
+      color: var(--text-secondary);
+      font-size: 1rem;
+    }
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    
+    .stat-card {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(100, 255, 218, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0, 247, 255, 0.1);
+      border-color: var(--accent);
+    }
+    
+    .stat-title {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .stat-title i {
+      margin-right: 8px;
+      color: var(--accent);
+    }
+    
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 5px;
+    }
+    
+    .stat-change {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    
+    .positive {
+      color: #64ff64;
+    }
+    
+    .negative {
+      color: #ff6464;
+    }
+    
+    .charts-container {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 30px;
+      margin-top: 30px;
+    }
+    
+    .chart-card {
+      background: linear-gradient(135deg, var(--secondary), var(--primary));
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(100, 255, 218, 0.1);
+    }
+    
+    .chart-title {
+      color: var(--text);
+      margin-bottom: 20px;
+      font-size: 1.2rem;
+      display: flex;
+      align-items: center;
+    }
+    
+    .chart-title i {
+      margin-right: 10px;
+      color: var(--accent);
+    }
+    
+    .chart-container {
+      position: relative;
+      height: 300px;
+      width: 100%;
+    }
+    
+    .user-agents {
+      margin-top: 20px;
+    }
+    
+    .user-agent {
+      background: rgba(10, 25, 47, 0.5);
+      padding: 10px 15px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-family: monospace;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      border-left: 3px solid var(--accent);
+    }
+    
+    .last-updated {
+      text-align: right;
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>MARX BOT ANALYTICS</h1>
+      <p class="subtitle">Real-time usage statistics for your WhatsApp bot</p>
+    </header>
+    
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-title"><i class="fas fa-users"></i> ACTIVE SESSIONS</div>
+        <div class="stat-value" id="active-sessions">0</div>
+        <div class="stat-change"><span id="active-change">0</span> in last 5 min</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-title"><i class="fas fa-sign-in-alt"></i> TOTAL SESSIONS</div>
+        <div class="stat-value" id="total-sessions">0</div>
+        <div class="stat-change"><span id="total-change">0</span> today</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-title"><i class="fas fa-sign-out-alt"></i> STOPPED SESSIONS</div>
+        <div class="stat-value" id="stopped-sessions">0</div>
+        <div class="stat-change"><span id="stopped-change">0</span> today</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-title"><i class="fas fa-comments"></i> MESSAGES PROCESSED</div>
+        <div class="stat-value" id="messages-processed">0</div>
+        <div class="stat-change"><span id="messages-change">0</span> in last 5 min</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-title"><i class="fas fa-bug"></i> ERRORS OCCURRED</div>
+        <div class="stat-value" id="errors-occurred">0</div>
+        <div class="stat-change"><span id="errors-change">0</span> today</div>
+      </div>
+      
+      <div class="stat-card">
+        <div class="stat-title"><i class="fas fa-clock"></i> AVG SESSION DURATION</div>
+        <div class="stat-value" id="avg-duration">0s</div>
+        <div class="stat-change">Current active sessions</div>
+      </div>
+    </div>
+    
+    <div class="charts-container">
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-chart-line"></i> SESSION ACTIVITY (LAST 24 HOURS)</div>
+        <div class="chart-container">
+          <canvas id="sessions-chart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-chart-pie"></i> MESSAGE DISTRIBUTION</div>
+        <div class="chart-container">
+          <canvas id="messages-chart"></canvas>
+        </div>
+      </div>
+      
+      <div class="chart-card">
+        <div class="chart-title"><i class="fas fa-mobile-alt"></i> USER AGENTS</div>
+        <div id="user-agents" class="user-agents">
+          <p>No user agent data available yet</p>
+        </div>
+      </div>
+    </div>
+    
+    <div class="last-updated" id="last-updated">Last updated: Never</div>
+  </div>
+  
+  <script>
+    // Global variables to store data
+    let statsData = {
+      activeSessions: 0,
+      totalSessions: 0,
+      stoppedSessions: 0,
+      messagesProcessed: 0,
+      errorsOccurred: 0,
+      avgDuration: 0,
+      history: [],
+      userAgents: []
+    };
+    
+    // Charts
+    let sessionsChart, messagesChart;
+    
+    // Initialize charts
+    function initCharts() {
+      const sessionsCtx = document.getElementById('sessions-chart').getContext('2d');
+      const messagesCtx = document.getElementById('messages-chart').getContext('2d');
+      
+      sessionsChart = new Chart(sessionsCtx, {
+        type: 'line',
+        data: {
+          labels: Array(24).fill().map((_, i) => `${i}:00`),
+          datasets: [{
+            label: 'Active Sessions',
+            data: Array(24).fill(0),
+            borderColor: '#64ffda',
+            backgroundColor: 'rgba(100, 255, 218, 0.1)',
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#ccd6f6'
+              }
+            }
+          },
+          scales: {
+            x: {
+              grid: {
+                color: 'rgba(136, 146, 176, 0.1)'
+              },
+              ticks: {
+                color: '#8892b0'
+              }
+            },
+            y: {
+              grid: {
+                color: 'rgba(136, 146, 176, 0.1)'
+              },
+              ticks: {
+                color: '#8892b0',
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+      
+      messagesChart = new Chart(messagesCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Commands', 'Media', 'Text', 'Errors'],
+          datasets: [{
+            data: [0, 0, 0, 0],
+            backgroundColor: [
+              'rgba(100, 255, 218, 0.7)',
+              'rgba(0, 247, 255, 0.7)',
+              'rgba(204, 214, 246, 0.7)',
+              'rgba(255, 100, 100, 0.7)'
+            ],
+            borderColor: [
+              'rgba(100, 255, 218, 1)',
+              'rgba(0, 247, 255, 1)',
+              'rgba(204, 214, 246, 1)',
+              'rgba(255, 100, 100, 1)'
+            ],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'right',
+              labels: {
+                color: '#ccd6f6'
+              }
+            }
+          }
+        }
+      });
+    }
+    
+    // Update dashboard with new data
+    function updateDashboard(data) {
+      // Store previous values for change calculations
+      const prevActive = statsData.activeSessions;
+      const prevTotal = statsData.totalSessions;
+      const prevStopped = statsData.stoppedSessions;
+      const prevMessages = statsData.messagesProcessed;
+      const prevErrors = statsData.errorsOccurred;
+      
+      // Update current values
+      statsData = {
+        ...statsData,
+        ...data,
+        history: [...(statsData.history || []), {
+          timestamp: new Date(),
+          ...data
+        }].slice(-100) // Keep last 100 entries
+      };
+      
+      // Update UI
+      document.getElementById('active-sessions').textContent = statsData.activeSessions;
+      document.getElementById('total-sessions').textContent = statsData.totalSessions;
+      document.getElementById('stopped-sessions').textContent = statsData.stoppedSessions;
+      document.getElementById('messages-processed').textContent = statsData.messagesProcessed;
+      document.getElementById('errors-occurred').textContent = statsData.errorsOccurred;
+      document.getElementById('avg-duration').textContent = `${Math.round(statsData.avgDuration)}s`;
+      
+      // Calculate changes
+      const activeChange = statsData.activeSessions - prevActive;
+      const totalChange = statsData.totalSessions - prevTotal;
+      const stoppedChange = statsData.stoppedSessions - prevStopped;
+      const messagesChange = statsData.messagesProcessed - prevMessages;
+      const errorsChange = statsData.errorsOccurred - prevErrors;
+      
+      // Update change indicators
+      updateChangeIndicator('active-change', activeChange);
+      updateChangeIndicator('total-change', totalChange);
+      updateChangeIndicator('stopped-change', stoppedChange);
+      updateChangeIndicator('messages-change', messagesChange);
+      updateChangeIndicator('errors-change', errorsChange);
+      
+      // Update charts
+      if (sessionsChart) {
+        // Update sessions chart with hourly data
+        const now = new Date();
+        const currentHour = now.getHours();
+        sessionsChart.data.datasets[0].data[currentHour] = statsData.activeSessions;
+        sessionsChart.update();
+      }
+      
+      // Update user agents list
+      if (statsData.userAgents && statsData.userAgents.length > 0) {
+        const userAgentsContainer = document.getElementById('user-agents');
+        userAgentsContainer.innerHTML = statsData.userAgents
+          .map(ua => `<div class="user-agent">${ua}</div>`)
+          .join('');
+      }
+      
+      // Update last updated time
+      document.getElementById('last-updated').textContent = `Last updated: ${new Date().toLocaleString()}`;
+    }
+    
+    function updateChangeIndicator(elementId, change) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      element.textContent = change > 0 ? `+${change}` : change;
+      element.className = change > 0 ? 'positive' : change < 0 ? 'negative' : '';
+    }
+    
+    // Fetch initial data
+    async function fetchData() {
+      try {
+        const response = await fetch('/api/stats');
+        if (response.ok) {
+          const data = await response.json();
+          updateDashboard(data);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }
+    
+    // Set up WebSocket for real-time updates
+    function setupWebSocket() {
+      const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+      const ws = new WebSocket(`${protocol}//${window.location.host}/ws`);
+      
+      ws.onopen = () => {
+        console.log('WebSocket connected');
+      };
+      
+      ws.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        updateDashboard(data);
+      };
+      
+      ws.onclose = () => {
+        console.log('WebSocket disconnected. Reconnecting...');
+        setTimeout(setupWebSocket, 5000);
+      };
+    }
+    
+    // Initialize dashboard
+    document.addEventListener('DOMContentLoaded', () => {
+      initCharts();
+      fetchData();
+      setupWebSocket();
+      
+      // Refresh data every 30 seconds
+      setInterval(fetchData, 30000);
+    });
+  </script>
+</body>
+</html>
